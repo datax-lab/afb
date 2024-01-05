@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="img-src 'self' * file: blob: data:; default-src * 'self' 'unsafe-inline' 'unsafe-eval' file: data: gap: content:" http-equiv="Content-Security-Policy">
+    <link rel= "stylesheet" type= "text/css" href= "{{url_for('static',filename='viewer.css')}}">
+    <link rel="shortcut icon" href="{{url_for('static',filename='favicon.ico')}}">
+    <title>Slide Viewer</title>
+</head>
+<body>
+
+<div id="main">
+    <div id="view" hidden>
+        <button onclick="back()" class="gray" style="position:fixed; z-index: 1;">Back</button>
+        <div id="magnification-div"><p id="magnification-text"></p></div>
+    </div>
+    <div id="sidebar">
+        <div id="toptext">Select A Slide<div id="topbar"></div></div>
+        <div id="loader"></div>
+        <img id="thumbnail", src="/static/images/empty.png"></img>
+        <table><tr><th>Rank</th><th>Score</th><th>Decision</th></tr></table>
+        <div id="problistwrap"><table id="problist"></table></div>
+        <div id="sendbar">
+            <button id="button" disabled class="green" type="button" onclick="predict()">Loading...</button>
+            <button id="sendno" hidden class="red" type="button" onclick="decide(1)">✖</button>
+            <button id="sendyes" hidden class="green" type="button" onclick="decide(2)">✓</button>
+        </div>
+    </div>
+    <div id="open">
+        <table><tr><th>Name</th><th>Analysis</th><th>Decision</th></tr></table>
+        <div id="filelistwrap"><table id="filelist"></table></div>
+        <div id="nofiles">No Files Selected</div>
+        <div id="openfiles" onclick="loadfiles()">Select SVS Files</div>
+    </div>
+</div>
+
+<script type="text/javascript" src={{url_for('static',filename='openseadragon.js')}}></script>
+<script type="text/javascript" src={{url_for('static',filename='viewer.js')}}></script>
+</body>
+</html>

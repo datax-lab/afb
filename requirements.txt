@@ -1,0 +1,6 @@
+requests
+Flask
+openslide-python
+numpy
+pyautogui
+psutil
