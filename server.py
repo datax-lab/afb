@@ -237,7 +237,7 @@ def upload(path, level, col, row, decision):
         buf = BytesIO()
         tile.save(buf, 'jpeg', quality=app.config['DEEPZOOM_TILE_QUALITY'])
         img = {'image': buf.getvalue()}
-        r = requests.post('http://dev.dataxlab.org/img',
+        r = requests.post('http://afb.dataxlab.org/img',
             files = img,
             data = {'name': re.search('\d+(?=\.svs)', path).group(0), 'x': col, 'y': row, 'd': decision}
         )
