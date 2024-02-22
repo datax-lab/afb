@@ -226,7 +226,7 @@ def getprogress():
     global predictprogress
     print(predictprogress)
     predictprogress = {k:v for k,v in predictprogress.items() if v > -1 and v < 100}
-    return make_response(temp)
+    return make_response(predictprogress)
 
 @app.route('/upload_<path:path>/<int:level>/<int:col>_<int:row>_<int:decision>')
 def upload(path, level, col, row, decision):
