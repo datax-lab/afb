@@ -4,3 +4,5 @@ openslide-python
 numpy
 pyautogui
 psutil
+torch
+torchvision
