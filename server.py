@@ -159,7 +159,7 @@ def tile(path, level, col, row, format):
 def predict(slide, level, col, row):
     try:
         tile = slide.get_tile(level, (col, row))
-        return {"x":col, "y":row, "p":score(tile), "d": 0}
+        return {"x":col, "y":row, "p":detect(tile), "d": 0}
     except ValueError: # Invalid level or coordinates
         abort(404)
 
@@ -172,6 +172,7 @@ def predicttile(path, level, col, row):
 predictprogress = {}
 def predictall(path):
     global predictprogress
+    predictprogress = {}
     slide = _get_slide(path)
     size = slide.size[-1]
     level = math.ceil(math.log2(max(size)))
@@ -189,7 +190,7 @@ def predictall(path):
             if app.interrupt:
                 break
             p = predict(slide, level, x, y)
-            if (p['p'] > 10000):
+            if (p['p'] > 0.5):
                 data['probs'].append(p)
         predictprogress[path] = x/ntiles['x']*100
     if not app.interrupt:
@@ -210,10 +211,10 @@ def predictfiles():
             predictall(path)
     if app.interrupt:
         print('interrupted')
-        predictprogress['interrupted'] = -1
+        predictprogress['interrupted'] = 0
     else:
         print('all done')
-        predictprogress['done'] = -1
+        predictprogress['done'] = 0
     return make_response()
 
 @app.route('/predictinterrupt')
@@ -283,9 +284,10 @@ def openfilespost():
 @app.route("/save_<path:path>", methods=['POST'])
 def save(path):
     data = request.get_json()
-    print('writing:', path)
-    with open(path, 'w') as file:
-        json.dump(data, file)
+    if data:
+        print('writing:', path)
+        with open(path, 'w') as file:
+            json.dump(data, file)
     return make_response({"success":1})
 
 @app.route("/close")

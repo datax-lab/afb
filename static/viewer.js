@@ -162,9 +162,10 @@ osd = new OpenSeadragon({
     minZoomLevel: 1,
     visibilityRatio: 1,
     zoomPerScroll: 1.2,
-    zoomPerClick: 1,
+    zoomPerClick: 1.5,
     timeout: 120000,
     debugMode: false,
+    gestureSettingsMouse : {clickToZoom: false, dblClickToZoom: true, dblClickDragToZoom:true}
 });
 osd.addHandler("update-level", function (eventData) {
     try {
@@ -176,10 +177,13 @@ osd.addHandler("update-level", function (eventData) {
 osd.addHandler("canvas-click", function (eventData) {
     if (eventData.quick) { //quick click without drag
         loader.hidden = false;
-        osd.viewport.panTo(eventData.position, false);
         let pos = osd.viewport.viewerElementToImageCoordinates(eventData.position);
         pos.x = Math.floor(pos.x/254);
         pos.y = Math.floor(pos.y/254);
+        if (slidedata) {
+            let i = slidedata.probs.findIndex(e => {return e.x == pos.x && e.y == pos.y});
+            if (i >= 0 && i < 1000) viewprob(i);
+        }
         viewer.setimg(pos.x, pos.y);
     }
 });
@@ -206,8 +210,9 @@ viewer.setimg = async function(x, y) {
     thumbnail.src = imageObjectURL;
     let r = await fetch('/predict_'+selectedfile.path+'/'+level+'/'+x+'_'+y);
     let score = await r.json();
-    s = score[0].p/65536;
+    s = score[0].p;
     console.log(s);
+    s = Math.min(Math.max(s/5 + 0.2, 0),1);
     topbar.style.width = '' + s*18 + 'vw';
     topbar.style.backgroundColor = 'rgb('+255*s+','+255*(1-s)+',0)';
 }
@@ -240,8 +245,9 @@ async function loadslide(row) {
         buttonyes.disabled = false;
         buttonno.disabled = false;
         last = null;
-        slidedata.probs.slice(0, 1000).forEach(async (e,i) => {
-            let s = Math.pow(e.p/65280, 0.5);
+        let probs = slidedata.probs.sort((a, b) => {return b.p - a.p;});
+        probs.slice(0, 1000).forEach(async (e,i) => {
+            let s = Math.min(Math.max(e.p/5 + 0.2, 0),1);
             viewer.makesquare(e.x, e.y, s);
             let row = problist.insertRow();
             let c1 = row.insertCell();
@@ -311,33 +317,34 @@ async function predictinterrupt() {
     button.className = 'green';
     button.innerHTML = 'Start';
     button.onclick = predict;
-    clearInterval(fetchprogress);
     fetch('/predictinterrupt')
 }
+
+async function refreshfiles(files) {
+    let newfiles = [];
+    if (files.length > 0) try {
+        data = await fetchpost('/openfiles', {files:files});
+        newfiles = await data.json();
+    }
+    catch {}
+    newfiles.forEach(e => {loadrow(e);});
+}
+
 async function getprogress() {
     data = await fetch('/predictprogress');
     data = await data.json();
     console.log(data);
-    if ('interrupted' in data) {
+    if (isempty(data) || 'interrupted' in data || 'done' in data) {
         clearInterval(fetchprogress);
-    }
-    if ('done' in data) {
         let files = [...filelist.rows].filter(e => e.progress < 100).map(e => e.path);
-        let newfiles = [];
-        try {
-            data = await fetchpost('/openfiles', {files:files});
-            newfiles = await data.json();
-        }
-        catch {}
-        newfiles.forEach(e => {loadrow(e);});
-        predictinterrupt();
-    }
-    if (isempty(data)) {
+        refreshfiles(files);
         predictinterrupt();
         return;
     }
     for (const [path, progress] of Object.entries(data)) {
         [...filelist.rows].find(e => e.path == path).updateprogress(progress);
+        let files = [...filelist.rows].filter(e => e.progress > 0 && e.progress < 100 && e.path != path).map(e => e.path);
+        refreshfiles(files)
     }
 }
 
