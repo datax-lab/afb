@@ -240,7 +240,7 @@ def upload(path, level, col, row, decision):
         img = {'image': buf.getvalue()}
         r = requests.post('http://afb.dataxlab.org/img',
             files = img,
-            data = {'name': re.search('\d+(?=\.svs)', path).group(0), 'x': col, 'y': row, 'd': decision}
+            data = {'name': re.search('\\d+(?=\\.svs)', path).group(0), 'x': col, 'y': row, 'd': decision}
         )
         if r.status_code == 200:
             return make_response({"success":1})

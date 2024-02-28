@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from torchvision import transforms
 
-model = torch.load('./model/test.pth')
 device = "cuda" if torch.cuda.is_available() else "cpu"
+model = torch.load('./model/test.pth', map_location=torch.device(device))
 
 transforms = transforms.Compose([transforms.Resize((256,256)), transforms.ToTensor()])
 
