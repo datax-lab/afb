@@ -361,8 +361,8 @@ async function decide(decision) {
                 slidedata.probs[thumbindex].d = 0;
                 selectedfile.removedecision();
             }
-            await fetch('/upload_'+selectedfile.path+'/'+level+'/'+slidedata.probs[thumbindex].x+'_'+slidedata.probs[thumbindex].y+'_'+slidedata.probs[thumbindex].d);
             list[thumbindex].childNodes[2].innerHTML = decisiontext[slidedata.probs[thumbindex].d];
+            fetch('/upload_'+selectedfile.path+'/'+level+'/'+slidedata.probs[thumbindex].x+'_'+slidedata.probs[thumbindex].y+'_'+slidedata.probs[thumbindex].d);
         }
     }
     catch (e) {console.log(e);}
